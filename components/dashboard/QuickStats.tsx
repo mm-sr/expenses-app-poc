@@ -1,64 +1,87 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowDownIcon, ArrowUpIcon, DollarSign, Percent, PiggyBank, Wallet } from 'lucide-react';
-import { QuickStats } from '@/lib/types';
+import { Card } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils';
+import { Expense } from '@/lib/types';
+import { TrendingDownIcon, TrendingUpIcon, WalletIcon } from 'lucide-react';
+import { getStoredPreferences } from '@/lib/store';
 
 interface QuickStatsProps {
-  stats: QuickStats;
+  expenses: Expense[];
 }
 
-export function QuickStatsCards({ stats }: QuickStatsProps) {
+export function QuickStats({ expenses }: QuickStatsProps) {
+  const preferences = getStoredPreferences();
+  const totalSpending = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  
+  // Calculate this month's spending
+  const thisMonth = new Date().getMonth();
+  const thisYear = new Date().getFullYear();
+  const thisMonthSpending = expenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getMonth() === thisMonth && 
+           expenseDate.getFullYear() === thisYear;
+  }).reduce((sum, expense) => sum + expense.amount, 0);
+
+  // Calculate last month's spending
+  const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+  const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
+  const lastMonthSpending = expenses.filter(expense => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getMonth() === lastMonth && 
+           expenseDate.getFullYear() === lastMonthYear;
+  }).reduce((sum, expense) => sum + expense.amount, 0);
+
+  const monthOverMonthChange = lastMonthSpending === 0 
+    ? 100 
+    : ((thisMonthSpending - lastMonthSpending) / lastMonthSpending) * 100;
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Spending</CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">${stats.totalSpending.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">This month</p>
-        </CardContent>
+    <div className="grid gap-4 md:grid-cols-3">
+      <Card className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-full">
+            <WalletIcon className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Total Spending</p>
+            <h3 className="text-2xl font-bold">
+              {formatCurrency(totalSpending, { currency: preferences.currency })}
+            </h3>
+          </div>
+        </div>
       </Card>
       
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Available Budget</CardTitle>
-          <Wallet className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">${stats.availableBudget.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">Remaining this month</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Savings Rate</CardTitle>
-          <PiggyBank className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.savingsRate}%</div>
-          <p className="text-xs text-muted-foreground">Of monthly income</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Month over Month</CardTitle>
-          {stats.monthOverMonth > 0 ? (
-            <ArrowUpIcon className="h-4 w-4 text-destructive" />
-          ) : (
-            <ArrowDownIcon className="h-4 w-4 text-primary" />
-          )}
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {stats.monthOverMonth > 0 ? '+' : ''}{stats.monthOverMonth}%
+      <Card className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-full">
+            <WalletIcon className="h-6 w-6 text-primary" />
           </div>
-          <p className="text-xs text-muted-foreground">Compared to last month</p>
-        </CardContent>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">This Month</p>
+            <h3 className="text-2xl font-bold">
+              {formatCurrency(thisMonthSpending, { currency: preferences.currency })}
+            </h3>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-full">
+            {monthOverMonthChange > 0 ? (
+              <TrendingUpIcon className="h-6 w-6 text-destructive" />
+            ) : (
+              <TrendingDownIcon className="h-6 w-6 text-green-500" />
+            )}
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Month over Month</p>
+            <h3 className="text-2xl font-bold">
+              {monthOverMonthChange > 0 ? '+' : ''}{monthOverMonthChange.toFixed(1)}%
+            </h3>
+          </div>
+        </div>
       </Card>
     </div>
   );

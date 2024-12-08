@@ -1,15 +1,19 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from '@/lib/providers/ThemeProvider';
-import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import { Header } from '@/components/layout/Header';
+import { Toaster } from '@/components/ui/toaster';
+import { validateServerEnv } from '@/lib/env';
 
 const inter = Inter({ subsets: ['latin'] });
 
+// Validate environment variables at build time
+validateServerEnv();
+
 export const metadata: Metadata = {
   title: 'Expense Tracker',
-  description: 'Track your expenses with ease',
+  description: 'Track and manage your personal expenses',
 };
 
 export default function RootLayout({
@@ -27,7 +31,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          {children}
+          <main className="container mx-auto px-4 py-8">{children}</main>
           <Toaster />
         </ThemeProvider>
       </body>

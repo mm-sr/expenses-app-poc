@@ -1,52 +1,78 @@
 import { Category, Expense, UserPreferences } from './types';
 
-const STORAGE_KEYS = {
-  EXPENSES: 'expenses',
-  CATEGORIES: 'categories',
-  PREFERENCES: 'preferences',
-} as const;
-
-export const defaultCategories: Category[] = [
-  { id: '1', name: 'Food & Dining', color: 'hsl(var(--chart-1))' },
-  { id: '2', name: 'Transportation', color: 'hsl(var(--chart-2))' },
-  { id: '3', name: 'Shopping', color: 'hsl(var(--chart-3))' },
-  { id: '4', name: 'Bills & Utilities', color: 'hsl(var(--chart-4))' },
-  { id: '5', name: 'Entertainment', color: 'hsl(var(--chart-5))' },
+const DEFAULT_CATEGORIES: Category[] = [
+  { id: 'food', name: 'Food & Dining', color: 'hsl(var(--chart-1))', budget: 500 },
+  { id: 'transport', name: 'Transportation', color: 'hsl(var(--chart-2))', budget: 200 },
+  { id: 'utilities', name: 'Utilities', color: 'hsl(var(--chart-3))', budget: 300 },
+  { id: 'entertainment', name: 'Entertainment', color: 'hsl(var(--chart-4))', budget: 150 },
+  { id: 'shopping', name: 'Shopping', color: 'hsl(var(--chart-5))', budget: 400 },
 ];
 
-export const defaultPreferences: UserPreferences = {
+const DEFAULT_PREFERENCES: UserPreferences = {
   currency: 'USD',
   dateFormat: 'MM/dd/yyyy',
   numberFormat: 'en-US',
-  theme: 'system',
+  theme: 'system'
 };
 
+const MOCK_EXPENSES: Expense[] = [
+  {
+    id: '1',
+    amount: 42.50,
+    currency: 'USD',
+    description: 'Groceries',
+    categoryId: 'food',
+    date: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '2',
+    amount: 29.95,
+    currency: 'USD',
+    description: 'Movie tickets',
+    categoryId: 'entertainment',
+    date: new Date(Date.now() - 86400000).toISOString(),
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    id: '3',
+    amount: 120.50,
+    currency: 'USD',
+    description: 'Electricity bill',
+    categoryId: 'utilities',
+    date: new Date(Date.now() - 172800000).toISOString(),
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    updatedAt: new Date(Date.now() - 172800000).toISOString()
+  }
+];
 export function getStoredExpenses(): Expense[] {
   if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem(STORAGE_KEYS.EXPENSES);
-  return stored ? JSON.parse(stored) : [];
+  const stored = localStorage.getItem('expenses');
+  return stored ? JSON.parse(stored) : MOCK_EXPENSES;
 }
 
 export function getStoredCategories(): Category[] {
-  if (typeof window === 'undefined') return defaultCategories;
-  const stored = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-  return stored ? JSON.parse(stored) : defaultCategories;
+  if (typeof window === 'undefined') return DEFAULT_CATEGORIES;
+  const stored = localStorage.getItem('categories');
+  return stored ? JSON.parse(stored) : DEFAULT_CATEGORIES;
 }
 
 export function getStoredPreferences(): UserPreferences {
-  if (typeof window === 'undefined') return defaultPreferences;
-  const stored = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
-  return stored ? JSON.parse(stored) : defaultPreferences;
+  if (typeof window === 'undefined') return DEFAULT_PREFERENCES;
+  const stored = localStorage.getItem('preferences');
+  return stored ? JSON.parse(stored) : DEFAULT_PREFERENCES;
 }
 
 export function storeExpenses(expenses: Expense[]): void {
-  localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(expenses));
+  localStorage.setItem('expenses', JSON.stringify(expenses));
 }
 
 export function storeCategories(categories: Category[]): void {
-  localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+  localStorage.setItem('categories', JSON.stringify(categories));
 }
 
 export function storePreferences(preferences: UserPreferences): void {
-  localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(preferences));
+  localStorage.setItem('preferences', JSON.stringify(preferences));
 }
